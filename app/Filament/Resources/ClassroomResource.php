@@ -3,18 +3,17 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ClassroomResource\Pages;
-use App\Filament\Resources\ClassroomResource\RelationManagers;
-use App\Models\Classroom;
-use Filament\Forms;
-use Filament\Forms\Form;
+  use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\TextInput;
+ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
-
+use App\Services\ClassroomService;
+use Filament\Notifications\Notification;
+use Filament\Forms\Components\Select;
+use App\Models\Classroom;
+use Filament\Tables\Filters\SelectFilter;
 
 class ClassroomResource extends Resource
 {
@@ -59,16 +58,48 @@ TextColumn::make('level_stage')->label(__('classrooms.level_stage')),
 TextColumn::make('max_capacity')->label(__('classrooms.capacity'))
             ])
             ->filters([
-                //
+        
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+       ->actions([
+    Tables\Actions\EditAction::make(),
+    
+    Tables\Actions\Action::make('transfer_students')
+        ->label(__('classrooms.transfer_students'))
+        ->icon('heroicon-o-arrow-right-circle')
+        ->color('warning')
+        ->form([
+            Select::make('target_classroom_id')
+                ->label(__('classrooms.target_classroom'))
+                ->options(fn ($record) => 
+                    Classroom::where('id', '!=', $record->id)
+                        ->pluck('name', 'id')
+                )
+                ->required(),
+        ])
+        ->action(function ($record, array $data) {
+            $service = new ClassroomService();
+            $result  = $service->transferStudents($record, $data['target_classroom_id']);
+
+            if (!$result['success']) {
+                Notification::make()
+                    ->title(__("classrooms.{$result['message']}"))
+                    ->danger()
+                    ->send();
+                return;
+            }
+
+            Notification::make()
+                ->title(__('classrooms.transfer_success'))
+                ->body("تم نقل {$result['count']} طالب بنجاح")
+                ->success()
+                ->send();
+        }),
+])
+->bulkActions([
+    Tables\Actions\BulkActionGroup::make([
+        Tables\Actions\DeleteBulkAction::make(),
+    ]),
+]);
     }
 
     public static function getRelations(): array
