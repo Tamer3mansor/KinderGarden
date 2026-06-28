@@ -10,11 +10,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
-class Admin extends Authenticatable implements FilamentUser
+class Admin extends Authenticatable implements FilamentUser  
 {
+     use HasRoles;
     /** @use HasFactory<AdminFactory> */
     use HasFactory, Notifiable;
 

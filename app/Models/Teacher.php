@@ -7,10 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'phone', 'email', 'specialization', 'hire_date', 'salary', 'status' , 'contract_end_date'])]
 class Teacher extends Model
 {
+    use HasRoles;
+
+    protected $guard_name = 'admin';
     /** @use HasFactory<\Database\Factories\TeacherFactory> */
     use HasFactory;
 
