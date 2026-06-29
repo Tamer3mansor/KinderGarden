@@ -19,9 +19,9 @@ class Classroom extends Model
         return $this->hasMany(Student::class);
     }
 
-    public function teachers(): BelongsToMany
+    public function admins(): BelongsToMany
     {
-        return $this->belongsToMany(Teacher::class, 'classroom_teacher')
+        return $this->belongsToMany(Admin::class, 'classroom_admin')
             ->withPivot('is_primary')
             ->withTimestamps();
     }

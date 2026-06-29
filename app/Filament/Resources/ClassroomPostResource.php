@@ -4,11 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Enums\PostType;
 use App\Filament\Resources\ClassroomPostResource\Pages;
-use App\Filament\Resources\ClassroomPostResource\RelationManagers;
 use App\Models\ClassroomPost;
+use App\Models\Classroom;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
@@ -20,7 +21,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ClassroomPostResource extends Resource
 {
@@ -38,61 +38,91 @@ class ClassroomPostResource extends Resource
         return __('posts.plural_label');
     }
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_any_post') ?? false;
+    }
+
     public static function form(Form $form): Form
     {
-        return $form->schema([
-            Select::make('classroom_id')
+        return $form->schema(function () {
+            $user = auth()->user();
+            $isTeacher = $user && $user->hasRole('teacher');
+            $adminId = $isTeacher ? $user->id : null;
+
+            $schema = [];
+
+            if ($isTeacher) {
+                $schema[] = Hidden::make('admin_id')->default($adminId);
+            } else {
+                $schema[] = Select::make('admin_id')
+                    ->label(__('posts.admin'))
+                    ->relationship('admin', 'name')
+                    ->nullable();
+            }
+
+            $schema[] = Select::make('classroom_id')
                 ->label(__('posts.classroom'))
-                ->relationship('classroom', 'name')
-                ->required(),
+                ->options(function () use ($isTeacher, $adminId) {
+                    $query = Classroom::query();
+                    if ($isTeacher && $adminId) {
+                        $query->whereHas('admins', fn ($q) => $q->where('admins.id', $adminId));
+                    }
+                    return $query->pluck('name', 'id');
+                })
+                ->required();
 
-            Select::make('teacher_id')
-                ->label(__('posts.teacher'))
-                ->relationship('teacher', 'name')
-                ->nullable(),
-
-            Select::make('type')
+            $schema[] = Select::make('type')
                 ->label(__('posts.type'))
                 ->options(PostType::class)
                 ->required()
                 ->live()
                 ->afterStateUpdated(fn ($state, callable $set) =>
                     $set('is_admin_only', $state === PostType::AdminNote->value)
-                ),
+                );
 
-            DatePicker::make('date')
+            $schema[] = DatePicker::make('date')
                 ->label(__('posts.date'))
                 ->required()
-                ->default(now()),
+                ->default(now());
 
-            Textarea::make('content')
+            $schema[] = Textarea::make('content')
                 ->label(__('posts.content'))
-                ->rows(4),
+                ->rows(4);
 
-            FileUpload::make('attachment')
+            $schema[] = FileUpload::make('attachment')
                 ->label(__('posts.attachment'))
                 ->acceptedFileTypes(['application/pdf', 'image/*'])
                 ->disk('public')
                 ->directory('classroom-posts')
                 ->maxSize(10240)
-                ->visibility('public'),
+                ->visibility('public');
 
-            Toggle::make('is_admin_only')
+            $schema[] = Toggle::make('is_admin_only')
                 ->label(__('posts.admin_only'))
-                ->helperText(__('posts.admin_only_hint')),
-        ]);
+                ->helperText(__('posts.admin_only_hint'));
+
+            return $schema;
+        });
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                $user = auth()->user();
+                if ($user && $user->hasRole('teacher')) {
+                    return $query->whereHas('classroom', fn ($q) => $q->whereHas('admins', fn ($aq) => $aq->where('admins.id', $user->id)));
+                }
+                return $query;
+            })
             ->columns([
                 TextColumn::make('classroom.name')
                     ->label(__('posts.classroom'))
                     ->searchable(),
 
-                TextColumn::make('teacher.name')
-                    ->label(__('posts.teacher'))
+                TextColumn::make('admin.name')
+                    ->label(__('posts.admin'))
                     ->searchable(),
 
                 TextColumn::make('type')

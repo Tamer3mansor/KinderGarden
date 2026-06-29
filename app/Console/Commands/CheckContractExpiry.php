@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 class CheckContractExpiry extends Command
 {
     protected $signature   = 'contracts:check-expiry';
-    protected $description = 'Check teachers with contracts expiring within 2 months';
+    protected $description = 'Check contracts expiring within 2 months';
 
     public function handle(): void
     {

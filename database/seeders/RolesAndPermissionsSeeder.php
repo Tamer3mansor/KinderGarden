@@ -9,29 +9,36 @@ use Spatie\Permission\Models\Role;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
    public function run(): void
 {
-    // Permissions
-    $permissions = [
+    $teacherPermissions = [
         'view_classrooms',
         'view_students',
         'manage_attendance',
         'add_attachments',
         'add_notes',
+        'view_any_post',
     ];
 
-    foreach ($permissions as $permission) {
+    $adminPermissions = [
+        ...$teacherPermissions,
+        'view_any_classroom',
+        'view_any_student',
+        'view_any_guardian',
+        'view_any_role',
+        'view_any_permission',
+        'view_any_admin',
+        'view_any_fee_plan',
+    ];
+
+    foreach ($adminPermissions as $permission) {
         Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'admin']);
     }
 
-    // Roles
     $teacherRole = Role::firstOrCreate(['name' => 'teacher', 'guard_name' => 'admin']);
-    $teacherRole->givePermissionTo($permissions);
+    $teacherRole->syncPermissions($teacherPermissions);
 
     $adminRole = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'admin']);
-    $adminRole->givePermissionTo(Permission::all());
+    $adminRole->syncPermissions(Permission::all());
 }
 }

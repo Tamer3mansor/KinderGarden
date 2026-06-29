@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ClassroomPost extends Model
 {
     protected $fillable = [
-        'classroom_id', 'teacher_id', 'type',
+        'classroom_id', 'admin_id', 'type',
         'date', 'content', 'attachment', 'is_admin_only'
     ];
 
@@ -22,8 +22,8 @@ class ClassroomPost extends Model
         return $this->belongsTo(Classroom::class);
     }
 
-    public function teacher(): BelongsTo
+    public function admin(): BelongsTo
     {
-        return $this->belongsTo(Teacher::class);
+        return $this->belongsTo(Admin::class);
     }
 }

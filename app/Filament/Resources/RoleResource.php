@@ -37,6 +37,11 @@ class RoleResource extends Resource
         return __('roles.plural_label');
     }
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_any_role') ?? false;
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([

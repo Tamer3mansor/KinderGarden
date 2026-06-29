@@ -2,21 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-#[Fillable(['attendable_type', 'attendable_id', 'date', 'status', 'notes'])]
 class Attendance extends Model
 {
-    /** @use HasFactory<\Database\Factories\AttendanceFactory> */
-    use HasFactory;
+    protected $fillable = [
+        'attendable_id',
+        'attendable_type',
+        'attendance_date',
+        'status',
+        'check_in_time',
+        'check_out_time',
+    ];
 
     protected function casts(): array
     {
         return [
-            'date' => 'date',
+            'attendance_date' => 'date',
+            'check_in_time'   => 'datetime',
+            'check_out_time'  => 'datetime',
         ];
     }
 

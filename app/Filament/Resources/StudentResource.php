@@ -7,6 +7,7 @@ use App\Filament\Resources\StudentResource\Pages;
 use App\Filament\Resources\StudentResource\RelationManagers;
 use App\Models\Student;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -29,6 +30,11 @@ class StudentResource extends Resource
     public static function getPluralModelLabel(): string
     {
         return __('students.plural_label');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_any_student') ?? false;
     }
 
     public static function form(Form $form): Form
@@ -67,6 +73,10 @@ class StudentResource extends Resource
                 Forms\Components\Textarea::make('notes')
                     ->label(__('students.notes'))
                     ->columnSpanFull(),
+                Select::make('fee_plan_id')
+                    ->label(__('students.fee_plan'))
+                    ->relationship('feePlan', 'name')  // ← علاقة مباشرة مع FeePlan
+                    ->required(),
             ]);
     }
 
@@ -108,11 +118,11 @@ class StudentResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                         SelectFilter::make('classrooms')
-        ->label(__('teachers.classrooms'))
-        ->relationship('classroom', 'name')
-        ->multiple()
-        ->preload(),
+                SelectFilter::make('classrooms')
+                    ->label(__('admins.classrooms'))
+                    ->relationship('classroom', 'name')
+                    ->multiple()
+                    ->preload(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

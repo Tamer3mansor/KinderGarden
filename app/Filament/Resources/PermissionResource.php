@@ -37,6 +37,11 @@ class PermissionResource extends Resource
         return __('permissions.plural_label');
     }
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_any_permission') ?? false;
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([

@@ -26,10 +26,16 @@ public static function getModelLabel(): string
 }
 
 // اسم الـ Resource في الـ Sidebar — "الفصول" أو "Classrooms"
-public static function getPluralModelLabel(): string
-{
-    return __('classrooms.plural_label');
-}
+    public static function getPluralModelLabel(): string
+    {
+        return __('classrooms.plural_label');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_any_classroom') ?? false;
+    }
+
     public static function form(Form $form): Form
     {
         // name level_stage max_capacity

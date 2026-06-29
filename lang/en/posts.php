@@ -3,7 +3,7 @@ return [
     'model_label'     => 'Post',
     'plural_label'    => 'Posts',
     'classroom'       => 'Classroom',
-    'teacher'         => 'Teacher',
+    'admin'           => 'Posted By',
     'type'            => 'Type',
     'date'            => 'Date',
     'content'         => 'Content',

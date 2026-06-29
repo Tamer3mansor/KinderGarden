@@ -26,6 +26,11 @@ class GuardianResource extends Resource
         return __('guardians.plural_label');
     }
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('view_any_guardian') ?? false;
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([

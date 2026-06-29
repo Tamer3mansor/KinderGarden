@@ -3,7 +3,7 @@ return [
     'model_label'     => 'منشور',
     'plural_label'    => 'المنشورات',
     'classroom'       => 'الفصل',
-    'teacher'         => 'المدرس',
+    'admin'           => 'بواسطة',
     'type'            => 'النوع',
     'date'            => 'التاريخ',
     'content'         => 'المحتوى',

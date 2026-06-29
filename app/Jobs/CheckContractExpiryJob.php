@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Models\Admin;
-use App\Models\Teacher;
 use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,7 +16,8 @@ class CheckContractExpiryJob implements ShouldQueue
 
     public function handle(): void
     {
-        $expiringTeachers = Teacher::query()
+        $expiringTeachers = Admin::query()
+            ->where('type', 'teacher')
             ->whereNotNull('contract_end_date')
             ->whereBetween('contract_end_date', [
                 now(),

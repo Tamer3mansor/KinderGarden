@@ -36,10 +36,15 @@ class Student extends Model
             ->withTimestamps();
     }
 
-    public function studentFees(): HasMany
-    {
-        return $this->hasMany(StudentFee::class);
-    }
+   public function feePlan(): BelongsTo
+{
+    return $this->belongsTo(FeePlan::class);
+}
+
+public function studentFees(): HasMany
+{
+    return $this->hasMany(StudentFee::class);
+}
 
     public function payments(): HasMany
     {
